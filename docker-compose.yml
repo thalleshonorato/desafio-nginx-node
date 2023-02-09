@@ -1,0 +1,40 @@
+version: '3.9'
+
+networks:
+  desafio-net:
+    name: desafio-net
+    driver: bridge
+    
+services:
+  database:
+    image: mysql:5.7
+    restart: always
+    networks:
+      - desafio-net
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - '3307:3306'
+  nodejs:
+    build: ./nodejs
+    networks:
+      - desafio-net
+    ports:
+      - '5000:5000'
+    depends_on:
+      - database
+    environment:
+      WAIT_HOSTS: database:3306
+  nginx:
+    build: ./nginx
+    volumes: 
+      - ./nginx/html:/var/www/html
+    networks:
+      - desafio-net
+    ports:
+      - '80:80'
+    depends_on:
+      - nodejs
